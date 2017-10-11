@@ -11,24 +11,32 @@ INCLUDE Irvine32.inc
 
 
 .data
+;constants
 MAX = 30																					;max size of user string input
 UPPER_LIMIT = 46																			;fibonacci upper limit as a constant
 LOWER_LIMIT =1
-MAX_ROW=5
+MAX_ROW=5																					
+
+;strings
 title_prompt		BYTE	"Fibonacci Numbers",0					
 author				BYTE	"Programmed by Brian Trang",0
-name_prompt			BYTE	"What is your name? ",0						
-
-user_name			BYTE	MAX+1 DUP (?)													;user input name add 1 for null
-user_prompt			BYTE	"Hello, ",0
-
+name_prompt			BYTE	"What is your name? ",0
 instruct_prompt		BYTE	"Enter the number of Fibonacci terms to be displayed. ",0
 input_prompt		BYTE	"Give  the number as an integer in the range [1 .. 46]. ",0
 max_prompt			BYTE	"How many Fibonacci terms do you want? ",0
 incorrect_prompt	BYTE	"Out of range. Enter a number in [1 ...46] ",0
 spacing				BYTE	"     ",0														;spacing for output
+spacing_double		BYTE	"    ",0														;spacing for double digits
+spacing_triple		BYTE	"   ",0															;spacing for triple digits
 closing				BYTE	"Results certified by Brian Trang. ",0
-goodbye				BYTE	"Good bye ",0
+goodbye				BYTE	"Good bye, ",0						
+user_prompt			BYTE	"Hello, ",0
+EC_1				BYTE	"**EC: Display the numbers in aligned columns ",0				;extra credit message
+
+;user input
+user_name			BYTE	MAX+1 DUP (?)													;user input name add 1 for null
+
+;integers
 num_terms			DWORD	?																;how many terms?
 num_total			DWORD	0						
 num_current			DWORD	1									
@@ -40,6 +48,7 @@ prev_term			DWORD	?
 main PROC
 
 ;Introduction
+
 	mov		edx, OFFSET title_prompt
 	call	WriteString
 	call	CrLf
@@ -48,6 +57,10 @@ main PROC
 	call	CrLf
 	call	CrLf
 
+	mov		edx,OFFSET EC_1
+	call	WriteString
+	call	Crlf
+	call	Crlf
 ;read user string input
 	mov		edx, OFFSET name_prompt										;ask for user name
 	call	WriteString
@@ -114,28 +127,56 @@ firstTerm:																;special block for first two terms
 	call	WriteString
 	dec		ecx
 	inc		column
-	jmp		restLoop
+	jmp		restLoop													;loop until first two terms printed
 
-restLoop:
-	mov		prev_term,eax
+restLoop:																;block for rest of fibonacci terms
+	mov		prev_term,eax												;save previous fib number in prev_term
 	add		eax,ebx
 	mov		ebx,prev_term
-
 	call	WriteDec
-	mov		edx, OFFSET spacing
+	cmp		eax,10
+	jb		fiveSpaces
+	jae		fourSpaces
+	
+fiveSpaces:																;spacing for single digit int
+	mov		edx, OFFSET spacing											
 	call	WriteString 
 	inc		column
+	jmp		afterSpacing
+fourSpaces:																;spacing for double digit int
+	cmp		eax,100
+	jae		threeSpaces
+	mov		edx, OFFSET spacing_double
+	call	WriteString
+	inc		column
+	jmp		afterSpacing
+threeSpaces:															;spacing for triple digit int
+	mov		edx, OFFSET spacing_triple
+	call	WriteString
+	inc		column
+	jmp		afterSpacing
+afterSpacing:															;determine if a new row is needed
 	cmp		column, MAX_ROW
 	je		newRow
 	jmp		continueLoop
-newRow:
+newRow:																	;adds a new row every five numbers
 	call	Crlf		
 	mov		column,0
 
-continueLoop:
+continueLoop:															;restart loop for next fib int
 	loop	restLoop
 
-
+;farewell
+	call	Crlf
+	call	Crlf
+	mov		edx, OFFSET closing
+	call	WriteString
+	call	Crlf
+	mov		edx, OFFSET goodbye
+	call	WriteString
+	mov		edx, OFFSET user_name
+	call	WriteString
+	call	Crlf
 	
 	exit			; exit to operating system
 main ENDP
