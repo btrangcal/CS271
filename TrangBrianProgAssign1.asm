@@ -221,7 +221,7 @@ mov		eax,float_toConvert
 sub		eax,float_EC3										;subtract to obtain trailing digits
 mov		float_remainder,eax						
 
-call	WriteDec
+call	WriteFloatfloat_prompt		BYTE	"Floating point quotient: ",0
 call	Crlf
 
 
